@@ -760,6 +760,59 @@ declare namespace Qt {
    * Qt documentation [QFrame](https://doc.qt.io/qt-6/qframe.html)
    */
   class QFrame extends QWidget {}
+
+  /**
+   * This type is returned when calling {@link QButtonGroup.addItem} or {@link QButtonGroup.addItems}.
+   *
+   * You can set checked to true for a QRadioButton even if you have also set enabled to false on it,
+   * which could allow you to prevent the script user from selecting a radio button by clicking on it,
+   * but still change the selection in your script.
+   *
+   * @since 1.11.1
+   */
+  class QRadioButton extends QAbstractButton {}
+
+  /**
+   * A group of radio buttons where only one button can be selected.
+   * @since 1.11.1
+   */
+  class QButtonGroup {
+    /**
+     * Retrieve a list of buttons added to this QButtonGroup.
+     */
+    readonly buttons: QRadioButton[];
+
+    /**
+     * The radio button that is currently selected, if any.
+     */
+    readonly checkedButton: QRadioButton | undefined;
+
+    /**
+     * ID / index into {@link QButtonGroup.buttons} that is currently selected.
+     * If no radio button is selected, -1 will be returned.
+     */
+    readonly checkedIndex: number;
+
+    /**
+     * Add multiple radio buttons to this group.
+     *
+     * Each entry in the values array is the text that will appear on the radio
+     * button. The optional list of tooltips specifies the tooltip for the
+     * radio buttons at each index.
+     */
+    addItems(values: string[], toolTips: string[] | undefined): QRadioButton[];
+
+    /**
+     * Add a radio button to this group with the given text and tooltip.
+     */
+    addItem(text: string, toolTip: string | undefined): QRadioButton;
+
+    /**
+     * Signal emitted when any radio button in this QButtonGroup is selected or deselected.
+     * If the button that causes the signal to be emitted is now selected, checked will be true.
+     */
+    readonly idToggled: Signal<[index: number, checked: boolean]>;
+  }
 }
 
 /**
@@ -2480,13 +2533,13 @@ interface MapEditor {
   currentBrushChanged: Signal<void>;
 
   /**
-   * Gets the currently selected {@link WangSet} in the "Terrain Sets" view.
+   * The currently selected {@link WangSet} in the "Terrain Sets" view.
    *
    * See also {@link TileLayerWangEdit}.
    *
-   * @since 1.8
+   * @since 1.8 (writable since 1.11.1)
    */
-  readonly currentWangSet: WangSet;
+  currentWangSet: WangSet;
 
   /**
    * The signal emitted when {@link currentWangSet} changes.
@@ -2496,15 +2549,15 @@ interface MapEditor {
   readonly currentWangSetChanged: Signal<void>;
 
   /**
-   * Gets the currently selected Wang color index in the "Terrain Sets" view.
+   * The currently selected Wang color index in the "Terrain Sets" view.
    * The value 0 is used to represent the eraser mode, and the first Wang color
    * has index 1.
    *
    * See also {@link TileLayerWangEdit}.
    *
-   * @since 1.8
+   * @since 1.8 (writable since 1.11.1)
    */
-  readonly currentWangColorIndex: number;
+  currentWangColorIndex: number;
 
   /**
    * The signal emitted when {@link currentWangColorIndex} changes.
@@ -3630,15 +3683,30 @@ declare class WangSet extends TiledObject {
 }
 
 /**
- * A color value.
+ * A color value. Can be created using {@link tiled.color}.
  *
- * A color value can be converted to a string and can also be assigned using a
- * string. The string is a hexadecimal triplet or quad in the form "#RRGGBB"
- * and "#AARRGGBB" respectively. For example, the color red corresponds to a
- * triplet of "#FF0000" and a slightly transparent blue to a quad of
- * "#800000FF".
+ * A color value can be converted to a string and a string can be assigned to
+ * color properties. The string is a hexadecimal triplet or quad in the form
+ * "#RRGGBB" and "#AARRGGBB" respectively. For example, the color red
+ * corresponds to a triplet of "#FF0000" and a slightly transparent blue to a
+ * quad of "#800000FF".
  *
- * Use {@link tiled.color} to create a color value.
+ * When a color property is not set, it will have an invalid color value but
+ * its string representation will be "#000000" (same as black). The only known
+ * way to determine whether a specific color value is invalid is to compare it
+ * with a known invalid color value. This can be created using for example
+ * `tiled.color("invalid")`:
+ *
+ * ```js
+ * if (color == "#000000")
+ *    tiled.log("The color is black or invalid.");
+ *
+ * if (color === tiled.color("invalid"))
+ *    tiled.log("The color is invalid!");
+ *
+ * if (color === tiled.color("#000000"))
+ *    tiled.log("The color is black!");
+ * ```
  */
 interface color {}
 
@@ -3670,7 +3738,7 @@ declare class Tileset extends Asset {
 
   static readonly Stretch: unique symbol;
   static readonly PreserveAspectFit: unique symbol;
-  
+
   static readonly NoTransformation: unique symbol;
   static readonly AllowFlipHorizontally: unique symbol;
   static readonly AllowFlipVertically: unique symbol;
@@ -3850,7 +3918,7 @@ declare class Tileset extends Asset {
   /**
    * Flags describing transformations of tiles in this tileset that will be
    * allowed when using the [terrains feature](https://doc.mapeditor.org/en/stable/manual/terrain/#tile-transformations)
-   * with this tileset. 
+   * with this tileset.
    *
    * @since 1.11.1
    */
@@ -4023,11 +4091,11 @@ interface TilesetEditor {
   readonly collisionEditor: TileCollisionEditor;
 
   /**
-   * Gets the currently selected {@link WangSet} in the "Terrain Sets" view.
+   * The currently selected {@link WangSet} in the "Terrain Sets" view.
    *
-   * @since 1.9
+   * @since 1.9 (writable since 1.11.1)
    */
-  readonly currentWangSet: WangSet;
+  currentWangSet: WangSet;
 
   /**
    * The signal emitted when {@link currentWangSet} changes.
@@ -4037,13 +4105,13 @@ interface TilesetEditor {
   readonly currentWangSetChanged: Signal<void>;
 
   /**
-   * Gets the currently selected Wang color index in the "Terrain Sets" view.
+   * The currently selected Wang color index in the "Terrain Sets" view.
    * The value 0 is used to represent the eraser mode, and the first Wang color
    * has index 1.
    *
-   * @since 1.9
+   * @since 1.9 (writable since 1.11.1)
    */
-  readonly currentWangColorIndex: number;
+   currentWangColorIndex: number;
 
   /**
    * The signal emitted when {@link currentWangColorIndex} changes.
@@ -5007,7 +5075,7 @@ declare class Process {
   /**
    * Executes the program at filePath with the given argument list and blocks until the process is finished. If an error occurs (for example, there is no executable file at filePath) and throwOnError is true (the default), then a JavaScript exception will be thrown. Otherwise, -1 will be returned in case of an error. The normal return code is the exit code of the process.
    */
-  exec(filePath: string, arguments: string[], throwOnError?: boolean): number;
+  exec(filePath: string, args: string[], throwOnError?: boolean): number;
 
   /**
    * Returns the value of the variable varName in the process’ environment.
@@ -5044,7 +5112,7 @@ declare class Process {
    *
    * Note: This call returns right after starting the process and should be used only if you need to interact with the process while it is running. Most of the time, you want to use exec() instead.
    */
-  start(filePath: string, arguments: string[]): boolean;
+  start(filePath: string, args: string[]): boolean;
 
   /**
    * Tries to terminate the process. This is not guaranteed to make the process exit immediately; if you need that, use kill().
@@ -5311,6 +5379,32 @@ declare class Dialog extends Qt.QWidget {
    * the widget.
    */
   addFilePicker(labelText?: string): FileEdit;
+
+  /**
+   * Add a {@link QButtonGroup} widget which allows you to add multiple radio
+   * buttons, where only one radio button can be selected at a time.
+   *
+   * Each radio button is a {@link QAbstractButton}. You can force selection of
+   * a radio button by setting checked = true, and also disable
+   *
+   * If the labelText is non-empty, a label widget will be added to the left of
+   * the widget.
+   *
+   * Each entry in the values array is the text that will appear on the radio button.
+   *
+   * labelToolTip is an optional tooltip for the label to the left of the radio button group.
+   *
+   * buttonToolTips is an optional list of tooltips, where each entry is a tooltip that corresponds
+   * to the radio button in the list of values at each index.
+   *
+   * @since 1.11.1
+   */
+  addRadioButtonGroup(
+    labelText: string,
+    values: string[],
+    labelToolTip: string | undefined,
+    buttonToolTips: string[] | undefined,
+  ): Qt.QButtonGroup;
 
   /**
    * Erase all of the widgets that you have added to the dialog.
